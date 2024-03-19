@@ -70,9 +70,6 @@
     const localizer = new ChildFrenchLocalizer();
 
     // Every experiment should save the ID of the subject, and their screen parameters.
-    // We do not need this for a longitudinal study.
-
-    //var subjectID = jsPsych.randomization.randomID(10);
     var subjectID;
 
     jsPsych.data.addProperties({'screenX': screen.width});
@@ -86,23 +83,27 @@
     let timeline = [];
 
     if (!queryDict.debug){
-      timeline.push({
-        type: jsPsychSurveyText,
-        questions: [
-          {prompt: 'ID'}
-        ],
-        on_finish: function(data){
-          let trialsData = jsPsych.data.get().trials;
-          let lastTrial = trialsData[trialsData.length - 1]
+      if (USE_PREDEFINED_ID){
+        timeline.push({
+          type: jsPsychSurveyText,
+          questions: [
+            {prompt: 'ID'}
+          ],
+          on_finish: function(data){
+            let trialsData = jsPsych.data.get().trials;
+            let lastTrial = trialsData[trialsData.length - 1]
 
-          // Define the subject ID...
-          subjectID = lastTrial.response.Q0;
-          jsPsych.data.addProperties({'ID': subjectID});
+            // Define the subject ID...
+            subjectID = lastTrial.response.Q0;
+            jsPsych.data.addProperties({'ID': subjectID});
 
-          // Apply it retroactively for cleanliness
-          lastTrial.ID = subjectID;
-        }
-      })
+            // Apply it retroactively for cleanliness
+            lastTrial.ID = subjectID;
+          }
+        })
+      } else {
+        subjectID = jsPsych.randomization.randomID(10);
+      }
 
       timeline.push({
         type: jsPsychFullscreen,

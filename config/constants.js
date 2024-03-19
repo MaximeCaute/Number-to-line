@@ -1,3 +1,6 @@
+// Whether to ask the user for a predefined ID or not.
+USE_PREDEFINED_ID = false;
+
 // How long should a trial last (from apparition of the line).
 TRIAL_TIME_LIMIT = 20000 //ms
 
