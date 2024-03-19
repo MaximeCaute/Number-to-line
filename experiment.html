@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<head>
+  <title>Number Line</title>
+  <meta charset="utf-8">
+  <link href="jsPsych-7.3.0/css/jspsych.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+  <!-- Load configuration files -->
+  <script type="text/javascript" src="config/constants.js"></script>
+  <script type="text/javascript" src="config/targets.js"></script>
+  <script type="text/javascript" src="config/blocks.js"></script>
+  <script type="text/javascript" src="config/gui-config.js"></script>
+
+  <!-- Open query dictionary to parse input from URL -->
+  <!-- Load some enumerations of IDs first to allow allocation -->
+  <script type="text/javascript" src="src/setup/modalities.js"></script>
+  <script type="text/javascript" src="src/setup/non-numerical-responses.js"></script>
+  <script type="text/javascript" src="src/setup/setup-query-dict.js"></script>
+
+  <!-- Load utility libraries -->
+  <script type="text/javascript" src="src/utils/audio-utils.js"></script>
+  <script type="text/javascript" src="src/utils/json-utils.js"></script>
+  <script type="text/javascript" src="src/utils/html-utils.js"></script>
+  <script type="text/javascript" src="src/utils/math-utils.js"></script>
+  <script type="text/javascript" src="src/utils/saving-utils.js"></script>
+
+  <!-- Load GUI elements -->
+  <script type="text/javascript" src="src/gui/cardboard.js"></script>
+  <script type="text/javascript" src="src/gui/tick.js"></script>
+  <script type="text/javascript" src="src/gui/renderer.js"></script>
+  <script type="text/javascript" src="src/gui/out-of-line-panel.js"></script>
+
+  <!-- Load maths elements -->
+  <script type="text/javascript" src="src/math/number-line.js"></script>
+  <script type="text/javascript" src="src/math/rational.js"></script>
+  <script type="text/javascript" src="src/math/error-flags.js"></script>
+
+  <!-- Load localization files -->
+  <script type="text/javascript" src="src/instructions-template.js"></script>
+  <script type="text/javascript" src="locale/localizer.js"></script>
+  <script type="text/javascript" src="locale/fr-child.js"></script>
+  <script type="text/javascript" src="locale/fr-adult.js"></script>
+
+  <!-- Load JsPysch and required plugins -->
+  <script type="text/javascript" src="jsPsych-7.3.0/jspsych.js"></script>
+  <script type="text/javascript" src="jsPsych-7.3.0/plugins/extension-mouse-tracking.js"></script>
+  <script type="text/javascript" src="jsPsych-7.3.0/plugins/plugin-instructions.js"></script>
+  <script type="text/javascript" src="jsPsych-7.3.0/plugins/plugin-fullscreen.js"></script>
+  <script type="text/javascript" src="jsPsych-7.3.0/plugins/plugin-survey-text.js"></script>
+  <script type="text/javascript" src="src/plugin-number-to-line.js"></script>
+
+  <!-- Load the core of the experiment -->
+  <script type="text/javascript" src="src/experiment-core.js"></script>
+
+  <!-- MAIN EXPERIMENT -->
+  <script type="text/javascript">
+    // We initialize jsPsych
+    const jsPsych = initJsPsych({
+      show_progress_bar: true,
+      extensions: [{
+        type: jsPsychExtensionMouseTracking,
+      }],
+      on_finish: function(data)
+      {
+        SavingUtils.saveLocal(jsPsych, `${subjectID}_T2`);
+        document.getElementById("jspsych-content").innerHTML = "<p>Vos réponses ont bien été enregistrées. <strong>Merci !</strong></p>";
+      }
+    });
+
+    const localizer = new ChildFrenchLocalizer();
+
+    // Every experiment should save the ID of the subject, and their screen parameters.
+    // We do not need this for a longitudinal study.
+
+    //var subjectID = jsPsych.randomization.randomID(10);
+    var subjectID;
+
+    jsPsych.data.addProperties({'screenX': screen.width});
+    jsPsych.data.addProperties({'screenY': screen.height});
+    jsPsych.data.addProperties({'innerX': window.innerWidth});
+    jsPsych.data.addProperties({'innerY': window.innerHeight});
+
+    // We should also save the gui configuration
+    jsPsych.data.addProperties({guiConfig: GUI_CONFIG})
+
+    let timeline = [];
+
+    if (!queryDict.debug){
+      timeline.push({
+        type: jsPsychSurveyText,
+        questions: [
+          {prompt: 'ID'}
+        ],
+        on_finish: function(data){
+          let trialsData = jsPsych.data.get().trials;
+          let lastTrial = trialsData[trialsData.length - 1]
+
+          // Define the subject ID...
+          subjectID = lastTrial.response.Q0;
+          jsPsych.data.addProperties({'ID': subjectID});
+
+          // Apply it retroactively for cleanliness
+          lastTrial.ID = subjectID;
+        }
+      })
+
+      timeline.push({
+        type: jsPsychFullscreen,
+        message: localizer.getMessage("FULLSCREEN_PROMPT", [], "p"),
+        button_label: localizer.getMessage("FULLSCREEN_LABEL"),
+      });
+
+      let instructionsTrial = ExperimentCore.createInstructionsTrial(
+        Instructions.toHTMLPages(localizer),
+        localizer.getMessage("NEXT"),
+        localizer.getMessage("PREVIOUS"));
+
+      timeline.push(instructionsTrial);
+    }
+
+    document.body.style.backgroundColor = GUI_CONFIG.BACKGROUND_COLOR;
+    document.body.style.overflow = "hidden";
+
+    timeline = timeline.concat(new ExperimentCore(localizer, TARGETS, BLOCKS, queryDict).generateTimeline());
+
+    timeline.push(ExperimentCore.createInstructionsTrial(
+      [localizer.getMessage("EXPERIENCE_ENDED", [], "p")],
+      localizer.getMessage("TERMINATE")));
+    console.log(timeline.length)
+    jsPsych.run(timeline);
+  </script>
+</body>
