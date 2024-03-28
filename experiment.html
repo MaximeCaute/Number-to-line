@@ -67,7 +67,7 @@
       }
     });
 
-    const localizer = new ChildFrenchLocalizer();
+    const localizer = queryDict.lang == "en" ? new ChildEnglishLocalizer() : new ChildFrenchLocalizer();
 
     // Every experiment should save the ID of the subject, and their screen parameters.
     var subjectID;
