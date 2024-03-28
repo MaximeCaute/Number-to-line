@@ -30,7 +30,7 @@ class ChildEnglishLocalizer extends Localizer {
       "CONGRATULATIONS": `Congratulations, keep going!`,
       "BLOCK_ENDED": `Congratulations! You have reached the end of this part!`,
 
-      "EXPERIENCE_ENDED": `You have finished the experiment. Thank you for your participation!`
+      "EXPERIENCE_ENDED": `You have finished the experiment. Thank you for your participation!`,
       "RESPONSES_SAVED": `Your answers have been fully saved. <strong>Merci!</strong>`,
 
       "INSTRUCTIONS_TITLE": `Instructions${Localizer.FORMATTABLE_MARKER}`,
